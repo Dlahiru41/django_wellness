@@ -2,9 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Task
 from .forms import TaskForm
-from slick_reporting.views import SlickReportView
-from slick_reporting.fields import SlickReportField
-# from slick_reporting.columns import SlickReportColumn
+from django.db.models import Count
+from datetime import timedelta
+from django.utils.timezone import now
 
 def landing_page(request):
     return render(request, 'tasks/landing_page.html')
@@ -25,36 +25,20 @@ def dashboard(request):
     tasks = Task.objects.all()
     return render(request, 'tasks/dashboard.html', {'tasks': tasks})
 
-# Reports
-from django.db.models import Count
-from datetime import timedelta
-from django.utils.timezone import now
+# Custom Report View
+@login_required
+def task_report(request):
+    # Get tasks due in the next 30 days
+    end_date = now() + timedelta(days=30)
+    upcoming_tasks = Task.objects.filter(due_by__lte=end_date)
 
-class TaskReportView(SlickReportView):
-    report_model = Task
-    date_field = 'due_by'
+    # Group by priority
+    priority_counts = upcoming_tasks.values('priority').annotate(count=Count('id'))
 
-    chart_settings = [
-        {
-            'type': 'line',
-            'data_source': 'due_by',
-            'title_source': 'user_email',
-            'plot_total': True,
-            'title': 'Tasks Due in the Next 30 Days',
-        },
-        {
-            'type': 'pie',
-            'data_source': 'priority',
-            'title_source': 'priority',
-            'plot_total': True,
-            'title': 'Tasks by Priority',
-        }
-    ]
+    # Prepare data for the report
+    report_data = {
+        'upcoming_tasks': upcoming_tasks,
+        'priority_counts': priority_counts,
+    }
 
-    group_by = 'priority'
-
-    columns = [
-        # SlickReportField.create(SlickReportColumn, 'is_urgent', count=True),
-        'task',
-        'due_by'
-    ]
+    return render(request, 'tasks/task_report.html', report_data)

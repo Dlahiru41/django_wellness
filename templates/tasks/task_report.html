@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!-- templates/tasks/task_report.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Report</title>
+</head>
+<body>
+    <h1>Task Report</h1>
+
+    <h2>Tasks Due in the Next 30 Days</h2>
+    <ul>
+        {% for task in upcoming_tasks %}
+            <li>{{ task.task }} - Due by: {{ task.due_by }} - Priority: {{ task.priority }}</li>
+        {% empty %}
+            <li>No upcoming tasks.</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Tasks by Priority</h2>
+    <ul>
+        {% for priority in priority_counts %}
+            <li>Priority: {{ priority.priority }} - Count: {{ priority.count }}</li>
+        {% empty %}
+            <li>No tasks available.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+</body>
+</html>
